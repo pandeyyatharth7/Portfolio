@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ */
+/* Base layer — global reset + dark-theme defaults.                    */
+/* ------------------------------------------------------------------ */
+@layer base {
+  html {
+    /* Smooth scroll for in-page anchors. */
+    scroll-behavior: smooth;
+    /* Web-wide background even before React mounts. */
+    background-color: #0A0A0A;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink-900 text-ink-100 font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  /* Selection in the accent color. */
+  ::selection {
+    background-color: #B6FF3C;
+    color: #0A0A0A;
+  }
+
+  /* Custom scrollbar — subtle, on-theme. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0A0A;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3A3A3A;
+  }
+
+  a {
+    @apply transition-colors;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Components — reusable building blocks.                              */
+/* ------------------------------------------------------------------ */
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-6 sm:px-8;
+  }
+
+  .eyebrow {
+    @apply text-xs uppercase tracking-[0.18em] text-ink-300 font-mono;
+  }
+
+  .h-display {
+    @apply font-display tracking-tight leading-[1.05];
+  }
+
+  /* The "lift on hover" card effect used across the site. */
+  .card-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  .card-lift:hover {
+    @apply -translate-y-1 shadow-lime;
+  }
+
+  /* Subtle dotted grid background for sections. */
+  .bg-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .bg-grid-fine {
+    background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Accent-bordered button — primary. */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-full bg-lime px-5 py-2.5 text-sm font-medium text-ink-900
+           transition-all duration-200 ease-out
+           hover:shadow-lime hover:-translate-y-0.5
+           focus:outline-none focus:ring-2 focus:ring-lime focus:ring-offset-2 focus:ring-offset-ink-900;
+  }
+
+  /* Ghost button. */
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-full border border-ink-600 px-5 py-2.5 text-sm font-medium text-ink-100
+           transition-all duration-200 ease-out
+           hover:border-lime hover:text-lime
+           focus:outline-none focus:ring-2 focus:ring-lime focus:ring-offset-2 focus:ring-offset-ink-900;
+  }
+
+  /* Animated underline used for inline links. */
+  .link-underline {
+    @apply relative;
+  }
+  .link-underline::after {
+    content: '';
+    @apply absolute left-0 -bottom-0.5 h-px w-full origin-right scale-x-0 bg-lime transition-transform duration-300 ease-out;
+  }
+  .link-underline:hover::after {
+    @apply origin-left scale-x-100;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Utilities — one-offs.                                               */
+/* ------------------------------------------------------------------ */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Hide the native cursor on devices that support the custom cursor. */
+  .cursor-hidden,
+  .cursor-hidden * {
+    cursor: none !important;
+  }
+}
+
+/* Reduced motion respect — global. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
