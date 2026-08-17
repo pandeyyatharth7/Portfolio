@@ -1,153 +1,139 @@
 # Yatharth Pandey — Portfolio
 
-Personal portfolio site for **Yatharth Pandey** — B.Tech CSE (AI & ML) @ VIT Chennai.
+Personal portfolio website with a "running ML system" aesthetic — designed to feel like an inspectable, live system rather than a generic photo+bio portfolio.
 
-A dark, 3D-immersive React + Vite + Tailwind site with React Router, Framer Motion, and a quiet React Three Fiber hero scene. Designed to lead with AI/ML work while keeping Software Engineering clearly available.
+## Tech Stack
 
-- **Live preview:** _add your deployed URL here_
-- **Stack:** React 18, Vite 5, Tailwind CSS 3, Framer Motion 11, React Three Fiber 8
-- **Pages:** Home, About, Projects, Skills, Contact (+ 404)
-- **Accent:** `#B6FF3C` (acid lime) on near-black `#0A0A0A`
+- **React** + **TypeScript** — component architecture
+- **Vite** — build tool and dev server
+- **Tailwind CSS** — utility-first styling with custom design tokens
+- **Framer Motion** — scroll animations and hero boot sequence
 
----
+## Design Philosophy
 
-## Quick start
+This portfolio reframes traditional portfolio sections as API endpoints and system components:
+
+- Navigation uses REST-style labels (`GET /about`, `POST /connect`)
+- Projects displayed as Hugging Face-style model cards with status indicators
+- Skills section styled as a grouped requirements.txt file
+- About section formatted as a YAML config block
+- Persistent status indicator in the navbar (currently: "status: training")
+- Boot sequence animation on hero section
+
+### Design Tokens
+
+```css
+bg-base: #0B0E14        /* page background */
+bg-surface: #131826     /* cards, panels */
+text-primary: #E4E7EC   /* body text */
+text-muted: #7B8496     /* secondary text */
+accent-violet: #A855F7  /* primary accent */
+accent-amber: #F5B942   /* status highlights */
+border-subtle: #232833  /* dividers */
+```
+
+### Typography
+
+- **Body/Display:** Inter (readable prose)
+- **Data/Labels/Code:** JetBrains Mono (nav, status, code blocks, section headers)
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and npm
+
+### Installation
 
 ```bash
-# 1. Install dependencies
+# Install dependencies
 npm install
 
-# 2. Start the dev server
+# Start development server
 npm run dev
-# → open http://localhost:5173
 
-# 3. Production build
+# Build for production
 npm run build
-npm run preview   # serves the production build locally
+
+# Preview production build
+npm run preview
 ```
 
-> Requires **Node.js 18+** (Node 20 LTS recommended).
+The dev server will start at `http://localhost:5173` (or the next available port).
 
----
-
-## Project structure
+## Project Structure
 
 ```
-src/
-├── App.jsx                  # Router + page transitions
-├── main.jsx                 # Entry point
-├── components/
-│   ├── common/              # Reusable building blocks (Reveal, SectionHeader)
-│   ├── layout/              # Navbar, Footer, Layout, CustomCursor, ScrollProgress
-│   └── three/               # R3F hero scene, 2D fallback, smart switcher
-├── data/
-│   └── portfolio.js         # SINGLE SOURCE OF TRUTH for content
-├── pages/
-│   ├── Home.jsx
-│   ├── About.jsx
-│   ├── Projects.jsx
-│   ├── Skills.jsx
-│   ├── Contact.jsx
-│   └── NotFound.jsx
-└── styles/
-    └── index.css            # Tailwind base + component layer
+portfolio/
+├── src/
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── Navbar.tsx          # REST-style nav with status indicator
+│   │   │   ├── StatusIndicator.tsx # Persistent pulsing status dot
+│   │   │   └── Footer.tsx
+│   │   └── sections/
+│   │       ├── Hero.tsx             # Boot sequence animation
+│   │       ├── About.tsx            # Config block + bio
+│   │       ├── Projects.tsx         # Model card grid
+│   │       ├── Skills.tsx           # Grouped requirements list
+│   │       └── Contact.tsx          # API call visual with links
+│   ├── data/
+│   │   └── content.ts               # All portfolio content
+│   ├── types/
+│   │   └── index.ts                 # TypeScript interfaces
+│   └── styles/
+│       └── index.css                # Tailwind + custom styles
+├── tailwind.config.js
+└── vite.config.ts
 ```
 
-### Editing content
+## Customization
 
-Almost everything you'd want to change lives in **`src/data/portfolio.js`**:
+### Updating Content
 
-- `profile` — name, tagline, contact details
-- `education` — schools, degrees, periods
-- `projects` — case-study content (problem, approach, stack, outcome, links)
-- `skillGroups` — skill categories and per-skill levels (1-5)
-- `beyond` — certifications, hackathons, languages
+All portfolio content lives in `src/data/content.ts`:
 
-No need to touch JSX to update copy.
+- Personal information
+- Projects with status, metrics, and URLs
+- Skills grouped by category
+- Certifications
 
-### Editing the design
+### Changing Status Indicator
 
-- **Colors / type / shadows** — `tailwind.config.js`
-- **Global styles, button/utility classes** — `src/styles/index.css`
-- **Accent hex** — search for `#B6FF3C` in `tailwind.config.js`, `index.css`, and the 3D scene files
+In `src/components/layout/Navbar.tsx`, update the status prop:
 
----
-
-## Design direction
-
-**3D / immersive** (chosen), committed to restrained rather than showy:
-
-- One hero scene: floating geometric forms + wireframe globe + sparse particles
-- Cursor-reactive parallax on the camera (subtle, ~5% lerp)
-- Custom two-layer cursor (dot + lagging ring) on fine-pointer devices only
-- 2D animated SVG fallback for mobile, touch, reduced-motion, and missing-WebGL
-- Framer Motion page transitions and scroll-in reveals across every page
-
-The hero scene is loaded with `React.lazy` so it never blocks first paint, and the fallback runs before WebGL is probed.
-
----
-
-## Custom cursor
-
-The custom cursor is gated behind `(pointer: fine) and (hover: hover)` — it won't break on touch devices. Add `data-cursor="view"` to any element to expand the cursor ring into a "VIEW" label (used on the featured project cards).
-
----
-
-## Contact form
-
-The form is **zero-config by default** — it opens the user's email client with a pre-filled `mailto:` link.
-
-To upgrade to a real backend, set a Formspree form ID in `.env.local`:
-
-```bash
-VITE_FORMSPREE_ID=your_form_id_here
+```tsx
+<StatusIndicator status="training" /> // or "open-to-work", "available", etc.
 ```
 
-The form will then `POST` JSON to `https://formspree.io/f/<id>`. No other code changes required.
+Add new status types in `StatusIndicator.tsx`.
 
----
+## Accessibility
+
+- Semantic HTML throughout
+- Keyboard focus states on all interactive elements
+- `prefers-reduced-motion` support — animations disabled for users with that OS setting
+- Alt text on images (when applicable)
 
 ## Deployment
 
-### Vercel
+This project is optimized for deployment on:
 
-The included `vercel.json` rewrites all routes to `/` so React Router handles them.
+- **Vercel** (recommended)
+- **Netlify**
+- Any static hosting service
 
-1. Push to GitHub
-2. Import the repo in Vercel
-3. Vercel auto-detects Vite — no config needed beyond the included `vercel.json`
+Build output goes to `dist/` — no special configuration needed.
 
-### Netlify
-
-The included `public/_redirects` file handles SPA routing.
-
-1. Push to GitHub
-2. Import the repo in Netlify
-3. Build command: `npm run build` — Publish directory: `dist`
-
-### Other static hosts
-
-Build with `npm run build` and serve the `dist/` folder. Make sure to rewrite all routes to `/index.html` (the configs above do this for Vercel and Netlify).
-
----
-
-## Browser support
-
-- Modern evergreen browsers (Chrome, Edge, Firefox, Safari)
-- Mobile Safari 14+, Chrome Android (with 2D fallback)
-- WebGL is best-effort — the site works fully without it
-
----
-
-## Accessibility notes
-
-- Color contrast checked against `ink-100` on `ink-900` (≥ 12:1)
-- All interactive elements have visible focus rings (`focus:ring-2 focus:ring-lime`)
-- `prefers-reduced-motion` disables animations and the 3D scene globally
-- The custom cursor is **additive** — it never replaces the native cursor on devices that need it
-
----
+```bash
+npm run build
+# Deploy the dist/ folder
+```
 
 ## License
 
-MIT — feel free to fork the structure for your own portfolio. Replace the data in `src/data/portfolio.js` and ship.
+MIT — feel free to fork and adapt for your own portfolio.
+
+---
+
+Built by [Yatharth Pandey](https://github.com/pandeyyatharth7)
