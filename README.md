@@ -117,18 +117,36 @@ Add new status types in `StatusIndicator.tsx`.
 
 ## Deployment
 
-This project is optimized for deployment on:
+### GitHub Pages
 
-- **Vercel** (recommended)
-- **Netlify**
-- Any static hosting service
+Deployment is automated by [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): every push to `main` lints, builds, and publishes `dist/` to GitHub Pages.
 
-Build output goes to `dist/` — no special configuration needed.
+One-time setup in the repository:
+
+1. **Settings → Pages → Build and deployment → Source** → select **GitHub Actions**.
+2. Push to `main` (or run the **Deploy to GitHub Pages** workflow manually from the **Actions** tab).
+
+The site is published at `https://pandeyyatharth7.github.io/Portfolio/`.
+
+#### How the Pages config works
+
+- `vite.config.ts` sets `base: '/Portfolio/'` for production builds, so asset URLs resolve under the repo subpath. Development still runs at `http://localhost:5173/`.
+- `src/App.tsx` passes `basename={import.meta.env.BASE_URL}` to `BrowserRouter`, keeping routes aligned with that subpath.
+- The `gh-pages-spa-fallback` Vite plugin copies `dist/index.html` to `dist/404.html`, so deep links like `/Portfolio/model_zoo/<slug>` work on direct load or refresh.
+- `public/.nojekyll` stops GitHub Pages from running Jekyll over the build output.
+
+**If you rename the repo**, update `REPO_BASE` in `vite.config.ts`. **If you host this as a user/org site** (`https://<user>.github.io`) or on a custom domain, set `REPO_BASE` to `/`.
+
+### Other hosts
+
+Also deployable to **Vercel**, **Netlify**, or any static host. Build output goes to `dist/`:
 
 ```bash
 npm run build
 # Deploy the dist/ folder
 ```
+
+For hosts that serve from the domain root, set `REPO_BASE` to `/` so assets are not prefixed with the repo name.
 
 ## License
 
