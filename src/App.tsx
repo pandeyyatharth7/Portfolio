@@ -25,7 +25,7 @@ function ScrollToTop() {
 
 function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter>
       <ScrollToTop />
       <div className="min-h-screen">
         <Navbar />
