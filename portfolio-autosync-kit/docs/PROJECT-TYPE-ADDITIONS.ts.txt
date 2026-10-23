@@ -1,0 +1,16 @@
+// Add these fields inside the existing Project interface in src/types/index.ts.
+// Keep all current fields and interfaces unchanged.
+  repositoryId?: number;
+  repositoryFullName?: string;
+  repositoryUrl?: string;
+  category?: string;
+  featured?: boolean;
+  startDate?: string;
+  endDate?: string;
+  timelineDate?: string;
+  timelineDateSource?: 'portfolio.md' | 'repository-created-at';
+  demoUrl?: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  bodyMarkdown?: string;
+  source?: 'github-portfolio-md';

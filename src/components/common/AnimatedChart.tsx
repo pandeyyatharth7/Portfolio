@@ -1,23 +1,54 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { timelineProjects } from '../../data/project-registry';
+import type { Project } from '../../types';
 
-interface ProjectPoint {
+interface TimelineMilestone {
+  project: Project;
   date: string;        // YYYY-MM-DD (approximate)
-  label: string;
-  monthIndex: number;  // months since earliest date
+  monthIndex: number;  // months since the earliest timeline date
 }
 
-// Real project timeline (approximate dates confirmed with user)
-const projectMilestones: ProjectPoint[] = [
-  { date: '2024-08-01', label: 'AutoCodeIQ', monthIndex: 0 },
-  { date: '2024-11-15', label: 'Nexus', monthIndex: 3 },
-  { date: '2025-03-01', label: 'ERM', monthIndex: 7 },
-  { date: '2025-07-15', label: 'OpenReframe', monthIndex: 11 },
+const MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
-// "Today" endpoint for the timeline (today is Aug 2026 per context)
-const todayMonthIndex = 24;
+function monthIndexOf(date: Date): number {
+  return date.getFullYear() * 12 + date.getMonth();
+}
+
+function parseTimelineDate(value: string): Date {
+  return new Date(`${value}T00:00:00.000Z`);
+}
+
+function formatMonthLabel(date: Date): string {
+  return `${MONTH_NAMES[date.getMonth()]} '${String(date.getFullYear()).slice(2)}`;
+}
+
+// Derived from all projects that carry a timeline date (manual + generated),
+// sorted chronologically. Never hard-coded here.
+const timelineMilestones: TimelineMilestone[] = (() => {
+  const sorted = [...timelineProjects]
+    .filter((project) => Boolean(project.timelineDate))
+    .sort((a, b) => (a.timelineDate ?? '').localeCompare(b.timelineDate ?? ''));
+  if (sorted.length === 0) return [];
+  const earliest = parseTimelineDate(sorted[0].timelineDate!);
+  return sorted.map((project) => ({
+    project,
+    date: project.timelineDate!,
+    monthIndex: monthIndexOf(parseTimelineDate(project.timelineDate!)) - monthIndexOf(earliest),
+  }));
+})();
+
+const earliestDate = timelineMilestones.length > 0
+  ? parseTimelineDate(timelineMilestones[0].date)
+  : new Date();
+const todayMonthIndex = timelineMilestones.length > 0
+  ? Math.max(monthIndexOf(new Date()) - monthIndexOf(earliestDate), 0)
+  : 0;
 
 export default function AnimatedChart() {
   const ref = useRef<HTMLDivElement>(null);
@@ -62,6 +93,9 @@ export default function AnimatedChart() {
     }
   }, [isInView, prefersReducedMotion]);
 
+  const totalProjects = timelineMilestones.length;
+  const safeTodayMonths = todayMonthIndex || 1;
+
   // Animated visible portion of timeline (months)
   const visibleMonths = todayMonthIndex * animationProgress;
 
@@ -72,20 +106,17 @@ export default function AnimatedChart() {
   const chartWidth = width - margin.left - margin.right;
   const chartHeight = height - margin.top - margin.bottom;
 
-  // Scales
+  // Scales derived from the data and the current date
   const xScale = (monthIdx: number) =>
-    margin.left + (monthIdx / todayMonthIndex) * chartWidth;
+    margin.left + (monthIdx / safeTodayMonths) * chartWidth;
   const yScale = (projectCount: number) =>
-    margin.top + chartHeight - (projectCount / projectMilestones.length) * chartHeight;
+    margin.top + chartHeight - (projectCount / Math.max(totalProjects, 1)) * chartHeight;
 
-  // Build the cumulative step path
-  // x-axis = months (0 → today); y-axis = projects shipped (0 → 4)
-  // Build segments: from each milestone's x, jumps up by 1
+  // Build the cumulative step path: x-axis = months (0 → today), y-axis = projects (0 → total)
   const fullSegments: Array<{ x: number; y: number }> = [];
   let currentY = 0;
-  for (let m = 0; m <= todayMonthIndex; m++) {
-    // Bump y at the month of each milestone
-    for (const milestone of projectMilestones) {
+  for (let m = 0; m <= safeTodayMonths; m += 1) {
+    for (const milestone of timelineMilestones) {
       if (milestone.monthIndex === m) {
         currentY += 1;
       }
@@ -105,7 +136,6 @@ export default function AnimatedChart() {
     for (let i = 1; i < visibleSegments.length; i++) {
       const prev = visibleSegments[i - 1];
       const curr = visibleSegments[i];
-      // Step shape: go horizontal first, then vertical (or vice versa for clean steps)
       pathData += ` L${xScale(curr.x)},${yScale(prev.y)} L${xScale(curr.x)},${yScale(curr.y)}`;
     }
   }
@@ -115,17 +145,22 @@ export default function AnimatedChart() {
     ? visibleSegments[visibleSegments.length - 1].y
     : 0;
 
-  // Y-axis ticks (0..4)
-  const yTicks = [0, 1, 2, 3, 4];
+  // Y-axis ticks (0 → total projects)
+  const yTicks = Array.from({ length: totalProjects + 1 }, (_, tick) => tick);
 
-  // X-axis ticks (months): label by month name
-  const monthLabels: Array<{ idx: number; label: string }> = [
-    { idx: 0, label: 'Aug \'24' },
-    { idx: 6, label: 'Feb \'25' },
-    { idx: 12, label: 'Aug \'25' },
-    { idx: 18, label: 'Feb \'26' },
-    { idx: 24, label: 'Aug \'26' },
-  ];
+  // X-axis ticks (months): every 6 months plus the current month so the axis
+  // grows with the portfolio instead of using fixed labels.
+  const xTicks: Array<{ idx: number; label: string }> = [];
+  for (let m = 0; m <= safeTodayMonths; m += 6) {
+    const date = new Date(earliestDate);
+    date.setMonth(date.getMonth() + m);
+    xTicks.push({ idx: m, label: formatMonthLabel(date) });
+  }
+  if (xTicks.length === 0 || xTicks[xTicks.length - 1].idx < safeTodayMonths) {
+    const date = new Date(earliestDate);
+    date.setMonth(date.getMonth() + safeTodayMonths);
+    xTicks.push({ idx: safeTodayMonths, label: formatMonthLabel(date) });
+  }
 
   return (
     <motion.div
@@ -139,7 +174,7 @@ export default function AnimatedChart() {
       <div className="terminal-card-titlebar">
         <span className="font-mono text-sm text-accent-violet">shipped.model</span>
         <span className="ml-auto font-mono text-xs text-text-muted">
-          {currentCount} / {projectMilestones.length} projects
+          {currentCount} / {totalProjects} projects
         </span>
       </div>
 
@@ -190,7 +225,7 @@ export default function AnimatedChart() {
 
           {/* X-axis ticks and labels */}
           <g fontFamily="'JetBrains Mono', monospace" fontSize="10" fill="#7B8496">
-            {monthLabels.map((m) => {
+            {xTicks.map((m) => {
               const x = xScale(m.idx);
               return (
                 <g key={m.idx}>
@@ -239,13 +274,13 @@ export default function AnimatedChart() {
           )}
 
           {/* Project markers (only show if visible) */}
-          {projectMilestones.map((milestone, i) => {
+          {timelineMilestones.map((milestone, i) => {
             const cx = xScale(milestone.monthIndex);
             const cy = yScale(i + 1);
             // Only render if this point is visible (month reached)
             if (milestone.monthIndex > visibleMonths) return null;
             return (
-              <g key={milestone.label}>
+              <g key={milestone.project.slug}>
                 <circle
                   cx={cx}
                   cy={cy}
@@ -268,7 +303,7 @@ export default function AnimatedChart() {
                   fontSize="10"
                   fill="#E4E7EC"
                 >
-                  {milestone.label}
+                  {milestone.project.name}
                 </text>
               </g>
             );
@@ -305,6 +340,31 @@ export default function AnimatedChart() {
       <div className="px-4 pb-3 font-mono text-xs text-text-muted/60 border-t border-border-subtle">
         real project timeline · approximate dates
       </div>
+
+      {/* Accessible chronological list so labels never overlap as the portfolio grows. */}
+      {totalProjects > 0 && (
+        <section className="mt-6" aria-label="Project timeline">
+          <h3 className="font-mono text-xs text-accent-violet mb-3">Timeline</h3>
+          <ul className="flex flex-wrap gap-4 text-sm">
+            {timelineMilestones.map((milestone) => (
+              <li key={milestone.project.slug} className="flex flex-col gap-1">
+                <Link
+                  to={`/model_zoo/${milestone.project.slug}`}
+                  className="font-mono text-text-primary hover:text-accent-violet transition-colors"
+                >
+                  {milestone.project.name}
+                </Link>
+                <time className="font-mono text-xs text-text-muted">{milestone.date}</time>
+              </li>
+            ))}
+          </ul>
+          <p className="font-mono text-xs text-text-muted/60 mt-2">
+            Dates are approximate: {timelineMilestones.some((m) => m.project.timelineDateSource === 'repository-created-at')
+              ? 'generated entries fall back to repository creation when portfolio.md has no startDate.'
+              : 'portfolio.md startDate is preferred where available.'}
+          </p>
+        </section>
+      )}
     </motion.div>
   );
 }

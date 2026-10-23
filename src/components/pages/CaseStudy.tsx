@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { projects } from '../../data/content';
+import { allProjects } from '../../data/project-registry';
+import DemoMedia from '../common/DemoMedia';
+import ProjectMarkdown from '../common/ProjectMarkdown';
 import type { Project } from '../../types';
 
 export default function CaseStudy() {
@@ -9,8 +11,8 @@ export default function CaseStudy() {
   const [projectIndex, setProjectIndex] = useState(0);
 
   useEffect(() => {
-    const found = projects.find((p) => p.slug === slug);
-    const index = projects.findIndex((p) => p.slug === slug);
+    const found = allProjects.find((p) => p.slug === slug);
+    const index = allProjects.findIndex((p) => p.slug === slug);
     if (found) {
       setProject(found);
       setProjectIndex(index);
@@ -31,8 +33,8 @@ export default function CaseStudy() {
     );
   }
 
-  const prevProject = projects[(projectIndex - 1 + projects.length) % projects.length];
-  const nextProject = projects[(projectIndex + 1) % projects.length];
+  const prevProject = allProjects[(projectIndex - 1 + allProjects.length) % allProjects.length];
+  const nextProject = allProjects[(projectIndex + 1) % allProjects.length];
 
   const statusConfig = {
     shipped: { color: 'bg-green-500', label: 'shipped' },
@@ -88,59 +90,72 @@ export default function CaseStudy() {
           </div>
         </header>
 
-        {/* Problem/Motivation */}
-        <section className="terminal-card mb-12">
-          <div className="terminal-card-titlebar">
-            <span className="font-mono text-sm text-accent-violet">problem.statement</span>
-          </div>
-          <div className="terminal-card-body">
-            <p className="text-text-primary leading-relaxed">{project.problem}</p>
-          </div>
-        </section>
+        <DemoMedia project={project} />
+        {project.source === 'github-portfolio-md' && (
+          <ProjectMarkdown content={project.bodyMarkdown ?? ''} />
+        )}
 
-        {/* Architecture */}
-        <section className="terminal-card mb-12">
-          <div className="terminal-card-titlebar">
-            <span className="font-mono text-sm text-accent-violet">architecture.diagram</span>
-          </div>
-          <div className="terminal-card-body">
-            <ArchitectureDiagram project={project} />
-          </div>
-        </section>
-
-        {/* Approach */}
-        <section className="terminal-card mb-12">
-          <div className="terminal-card-titlebar">
-            <span className="font-mono text-sm text-accent-violet">approach.methodology</span>
-          </div>
-          <div className="terminal-card-body">
-            <ol className="space-y-4">
-              {project.approach?.map((step, i) => (
-                <li key={i} className="flex gap-4 text-text-primary leading-relaxed">
-                  <span className="font-mono text-accent-violet shrink-0 pt-0.5">{i + 1}.</span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {/* Results/Metrics */}
-        <section className="terminal-card mb-12">
-          <div className="terminal-card-titlebar">
-            <span className="font-mono text-sm text-accent-violet">results.metrics</span>
-          </div>
-          <div className="terminal-card-body">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {project.results?.map((metric, idx) => (
-                <div key={idx} className="bg-bg-base border border-border-subtle rounded px-4 py-3">
-                  <div className="font-mono text-xs text-text-muted mb-1">{metric.label}</div>
-                  <div className="font-mono text-sm text-text-primary">{metric.value}</div>
-                </div>
-              ))}
+        {/* Problem/Motivation (manual projects only) */}
+        {project.source !== 'github-portfolio-md' && (
+          <section className="terminal-card mb-12">
+            <div className="terminal-card-titlebar">
+              <span className="font-mono text-sm text-accent-violet">problem.statement</span>
             </div>
-          </div>
-        </section>
+            <div className="terminal-card-body">
+              <p className="text-text-primary leading-relaxed">{project.problem}</p>
+            </div>
+          </section>
+        )}
+
+        {/* Architecture (manual projects only) */}
+        {project.source !== 'github-portfolio-md' && (
+          <section className="terminal-card mb-12">
+            <div className="terminal-card-titlebar">
+              <span className="font-mono text-sm text-accent-violet">architecture.diagram</span>
+            </div>
+            <div className="terminal-card-body">
+              <ArchitectureDiagram project={project} />
+            </div>
+          </section>
+        )}
+
+        {/* Approach (manual projects only) */}
+        {project.source !== 'github-portfolio-md' && (
+          <section className="terminal-card mb-12">
+            <div className="terminal-card-titlebar">
+              <span className="font-mono text-sm text-accent-violet">approach.methodology</span>
+            </div>
+            <div className="terminal-card-body">
+              <ol className="space-y-4">
+                {project.approach?.map((step, i) => (
+                  <li key={i} className="flex gap-4 text-text-primary leading-relaxed">
+                    <span className="font-mono text-accent-violet shrink-0 pt-0.5">{i + 1}.</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        )}
+
+        {/* Results/Metrics (manual projects only) */}
+        {project.source !== 'github-portfolio-md' && (
+          <section className="terminal-card mb-12">
+            <div className="terminal-card-titlebar">
+              <span className="font-mono text-sm text-accent-violet">results.metrics</span>
+            </div>
+            <div className="terminal-card-body">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {project.results?.map((metric, idx) => (
+                  <div key={idx} className="bg-bg-base border border-border-subtle rounded px-4 py-3">
+                    <div className="font-mono text-xs text-text-muted mb-1">{metric.label}</div>
+                    <div className="font-mono text-sm text-text-primary">{metric.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Tech Stack */}
         <section className="terminal-card mb-12">

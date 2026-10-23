@@ -1,0 +1,56 @@
+name: Sync portfolio projects
+
+on:
+  schedule:
+    # Every 6 hours, offset from the top of the hour to reduce schedule congestion.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portfolio-project-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out portfolio
+        uses: actions/checkout@v4
+        with:
+          # A repo-scoped fine-grained PAT is used so this commit can trigger the site's
+          # deployment build (GITHUB_TOKEN-created pushes do not trigger GitHub Pages builds).
+          token: ${{ secrets.PORTFOLIO_COMMIT_TOKEN }}
+          persist-credentials: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate and synchronize opted-in projects
+        run: npm run sync:portfolio
+        env:
+          PORTFOLIO_GITHUB_OWNER: pandeyyatharth7
+          PORTFOLIO_REPOSITORY: Portfolio
+          PORTFOLIO_REGISTRY_PATH: src/data/projects.generated.json
+          PORTFOLIO_SCAN_TOKEN: ${{ secrets.PORTFOLIO_SCAN_TOKEN }}
+
+      - name: Commit registry changes
+        run: |
+          if git diff --quiet -- src/data/projects.generated.json; then
+            echo "No generated project changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/projects.generated.json
+          git commit -m "chore: sync generated portfolio projects"
+          git push
