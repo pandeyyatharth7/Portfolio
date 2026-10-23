@@ -7,13 +7,17 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:portfolio": "node scripts/sync-portfolio-projects.mjs",
+    "test:portfolio-sync": "node --test scripts/sync-portfolio-projects.test.mjs"
   },
   "dependencies": {
     "framer-motion": "^13.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.2"
+    "react-markdown": "^9.0.3",
+    "react-router-dom": "^7.18.2",
+    "remark-gfm": "^4.0.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -22,6 +26,7 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
     "autoprefixer": "^10.5.4",
+    "gray-matter": "^4.0.3",
     "oxlint": "^1.78.0",
     "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3",

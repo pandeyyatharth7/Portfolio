@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { projects } from '../../data/content';
+import { allProjects } from '../../data/project-registry';
 import TerminalCard from '../common/TerminalCard';
 
 export default function Projects() {
@@ -26,7 +26,7 @@ export default function Projects() {
         </motion.h2>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {projects.map((project, index) => (
+          {allProjects.map((project, index) => (
             <TerminalCard
               key={project.name}
               project={project}

@@ -21,6 +21,7 @@ export const projects: Project[] = [
     architecture: 'Transformers · Hugging Face · PyTorch',
     description: 'Analyzes code semantics and flags bugs/vulnerability-prone patterns. Integrated with Git/GitHub and CI/CD concepts for pre-merge quality checks.',
     status: 'shipped',
+    timelineDate: '2024-08-01',
     metrics: [
       { label: 'Integration', value: 'Git/GitHub' },
       { label: 'Pipeline', value: 'CI/CD' },
@@ -50,6 +51,7 @@ export const projects: Project[] = [
     architecture: 'React · Node.js/Express · MySQL',
     description: '3NF-normalized MySQL schema, demand engine monitoring reorder thresholds and replenishment costs across warehouse nodes. Automatic SQLite fallback for cloud outages.',
     status: 'live',
+    timelineDate: '2024-11-15',
     url: 'https://nexus-inventory-os.vercel.app',
     metrics: [
       { label: 'Deploy', value: 'Vercel/Render/Aiven' },
@@ -82,6 +84,7 @@ export const projects: Project[] = [
     architecture: 'Depth Anything V2 · Diffusion · FastAPI',
     description: 'Integrates depth estimation with diffusion-based inpainting to reconstruct gaps from viewpoint changes. CUDA-accelerated FastAPI/PyTorch/OpenCV backend with React/Vite interface.',
     status: 'training',
+    timelineDate: '2025-03-01',
     metrics: [
       { label: 'Target', value: '8GB consumer GPU' },
       { label: 'Stack', value: 'PyTorch/OpenCV' },
@@ -114,6 +117,7 @@ export const projects: Project[] = [
     architecture: 'React/Tailwind · Node.js/Express · PostgreSQL',
     description: 'Recharts dashboards, RBAC, JWT auth, Excel export, automated cron-based review monitoring.',
     status: 'private',
+    timelineDate: '2025-07-15',
     metrics: [
       { label: 'Auth', value: 'JWT + RBAC' },
       { label: 'Client', value: 'Confidential' },
